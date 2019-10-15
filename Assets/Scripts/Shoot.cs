@@ -192,6 +192,10 @@ public class Shoot : MonoBehaviour
         if (Physics.Raycast(m_ShootPoint.position, m_ShootPoint.TransformDirection(Vector3.forward), out hit, Mathf.Infinity))
         {
             Debug.DrawRay(m_ShootPoint.position, m_ShootPoint.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
+            Vector3 hitUp = hit.collider.transform.position;
+            hitUp.y += 10f;
+            Debug.DrawLine(hit.collider.transform.position, hitUp, Color.red);
+            Instantiate(m_Sparkles, hit.transform.position, Quaternion.identity);
             if (hit.rigidbody)
             {
                 hit.rigidbody.AddForce(m_ShootPoint.TransformDirection(Vector3.forward) * 50);

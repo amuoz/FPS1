@@ -30,7 +30,8 @@ public class WeaponManager : MonoBehaviour {
 	void Start () {
 
         // ## TO-DO 1 - Activar el primer arma de la lista, y establecerlo como arma activa. Pista: m_Weapons[0] ##
-
+        m_ActiveWeapon = m_Weapons[0];
+        m_ActiveWeapon.SetActive(true);
     }
 	
 	// En el método Update estaremos leyendo de la entrada de usuario para ver qué tecla
@@ -41,12 +42,12 @@ public class WeaponManager : MonoBehaviour {
 		if (Input.GetKeyDown(KeyCode.Alpha1))
 		{
             // ## TO-DO 3 - Llamar a ManageWeapon con el índice adecuado (0)
-
+            ManageWeapon(0);
         }
 		else if (Input.GetKeyDown(KeyCode.Alpha2))
 		{
             // ## TO-DO 4 - Llamar a ManageWeapon con el índice adecuado (1)
-
+            ManageWeapon(1);
         }
     }
 
@@ -61,7 +62,12 @@ public class WeaponManager : MonoBehaviour {
         // Pista: Activar/Desactivar = m_ActiveWeapon.SetActiveRec...
         // ---
         // Actualizar m_ActiveWeapon
-
+        if(m_Weapons[index] != m_ActiveWeapon)
+        {
+            m_ActiveWeapon.SetActive(false);
+            m_ActiveWeapon = m_Weapons[index];
+            m_ActiveWeapon.SetActive(true);
+        }
 
     }
 }
