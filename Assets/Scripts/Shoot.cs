@@ -30,9 +30,9 @@ public class Shoot : MonoBehaviour
     /// <summary>
     /// Tiempo transcurrido entre disparos
     /// </summary>
-    [System.NonSerialized]
-	public float m_TimeBetweenShots = 0.25f;
-	
+    [SerializeField]
+	private float m_TimeBetweenShots = 0.1f;
+
 	/// <summary>
 	/// Booleano para indicar si el arma es automática
 	/// </summary>
@@ -58,6 +58,9 @@ public class Shoot : MonoBehaviour
     /// </summary>
     public AudioClip m_ShootAudio;
 
+    private WeaponManager weaponManager;
+ 
+
     #endregion
 
     #region Non exposed fields
@@ -74,6 +77,8 @@ public class Shoot : MonoBehaviour
 
     private AudioSource audioSource=null;
 
+    private Quaternion initialWeaponRotation;
+
     #endregion
 
     #region Monobehaviour Calls
@@ -81,6 +86,7 @@ public class Shoot : MonoBehaviour
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        weaponManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<WeaponManager>();
     }
     /// <summary>
     /// En el método Update se consultará al Input si se ha pulsado el botón de disparo
@@ -98,6 +104,7 @@ public class Shoot : MonoBehaviour
 		{
             if (CanShoot())
             {
+              
                 // ## TO-DO 5 - En función de si hay proyectil o no, usar la función de disparo
                 // con proyectil, o la de disparo con rayo ## 
                 if (m_projectile != null)
@@ -107,22 +114,42 @@ public class Shoot : MonoBehaviour
                 else {
                     ShootRay();
                 }
+
                 // ## TO-DO 6 - Reiniciar el contador m_TimeSinceLastShot ## 
                 m_TimeSinceLastShot = 0;
+
+                if (!m_IsShooting)
+                {
+                    initialWeaponRotation = Quaternion.Euler(weaponManager.m_ActiveWeapon.transform.localRotation.x,0,0);
+                    Debug.Log("m_IsShooting=true");
+                    m_IsShooting = true;
+
+                    // ## TO-DO 7 Poner sonido de disparo.
+                    audioSource.Play();
+
+                }
+
+                // OPTIONAL: Weapon recoil
+                Debug.Log("local x" + weaponManager.m_ActiveWeapon.transform.localRotation.x);
+                Debug.Log("initial x" + initialWeaponRotation.x);
+                
+
+                if (weaponManager.m_ActiveWeapon.transform.localRotation.x > initialWeaponRotation.x - 0.1f)
+                {
+                    weaponManager.m_ActiveWeapon.transform.Rotate(Quaternion.Euler(-10, 0, 0).eulerAngles);
+                }
+                
             }
 
-            if (!m_IsShooting)
-            {
-                m_IsShooting = true;
-
-                // ## TO-DO 7 Poner sonido de disparo.
-                audioSource.Play();
-
-            }
-		}
+        }
         else if (m_IsShooting)
         {
             m_IsShooting = false;
+
+            weaponManager.m_ActiveWeapon.transform.localRotation = Quaternion.Euler(
+                initialWeaponRotation.x
+                , weaponManager.m_ActiveWeapon.transform.localRotation.y
+                , weaponManager.m_ActiveWeapon.transform.localRotation.z);
 
             // ## TO-DO 8 Parar sonido de disparo.
             audioSource.Stop();
@@ -139,7 +166,12 @@ public class Shoot : MonoBehaviour
 	private bool CanShoot()
 	{
         //  ## TO-DO 8 - Comprobar si puedo disparar #
-        return true;
+        if(m_TimeSinceLastShot > m_TimeBetweenShots)
+        {
+            return true;
+        }
+
+        return false;
 	}
 	
     /// <summary>
@@ -192,10 +224,7 @@ public class Shoot : MonoBehaviour
         if (Physics.Raycast(m_ShootPoint.position, m_ShootPoint.TransformDirection(Vector3.forward), out hit, Mathf.Infinity))
         {
             Debug.DrawRay(m_ShootPoint.position, m_ShootPoint.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
-            Vector3 hitUp = hit.collider.transform.position;
-            hitUp.y += 10f;
-            Debug.DrawLine(hit.collider.transform.position, hitUp, Color.red);
-            Instantiate(m_Sparkles, hit.transform.position, Quaternion.identity);
+            Instantiate(m_Sparkles, hit.point, Quaternion.identity);
             if (hit.rigidbody)
             {
                 hit.rigidbody.AddForce(m_ShootPoint.TransformDirection(Vector3.forward) * 50);

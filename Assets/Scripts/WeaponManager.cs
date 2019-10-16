@@ -17,7 +17,7 @@ public class WeaponManager : MonoBehaviour {
 	/// <summary>
 	/// Variable privada que contiene el arma activa en cada momento
 	/// </summary>
-	private GameObject m_ActiveWeapon;
+	public GameObject m_ActiveWeapon;
 	
 	/// <summary>
 	/// Índice del arma por defecto en el manager
